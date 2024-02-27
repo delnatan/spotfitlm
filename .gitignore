@@ -1,0 +1,33 @@
+# General Python ignores
+*.py[cod]
+__pycache__/
+*.pyc
+
+# Project-specific ignores
+.DS_Store
+Makefile
+prototypes/
+*.egg-info/
+*.egg
+
+# Jupyter Notebook ignores
+.ipynb_checkpoints/
+
+# OS-generated files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Editor directories and files
+.idea/
+.vscode/
+*.swp
+*.swo
+*.sublime-workspace
+
+# Build artifacts
+build/
+dist/
+*.so
+*.dylib
+*.dll
