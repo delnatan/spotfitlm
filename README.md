@@ -7,3 +7,17 @@ For spot detection, this package uses the algorithm from Danuser Lab's U-track M
 
 for doing the hypothesis testing on *significant* Gaussian peaks above background noise.
 
+# Installation
+
+This package is not yet released at PyPI so it can't be installed by a simple `pip install`, so you'll need to use `git` to install it to your Python environment:
+
+1) Clone this repository
+```bash
+git clone https://github.com/delnatan/spotfitlm.git
+```
+
+2) and go into the directory `spotfitlm` and run:
+```bash
+pip install -e .
+```
+
