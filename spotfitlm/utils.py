@@ -11,6 +11,8 @@ https://github.com/DanuserLab/u-track3D/blob/master/software/pointSourceDetectio
 
 """
 
+from typing import Callable
+
 import numpy as np
 import pandas as pd
 import scipy.ndimage as ndi
@@ -114,20 +116,37 @@ class PointSourceDetector2D:
 
 
 def find_spots_in_timelapse(
-    image,
+    image=None,
+    mask=None,
+    start_frame=0,
+    end_frame=5,
     sigma=1.5,
     significance=0.05,
     boxsize=9,
     itermax=50,
-    mask=None,
-    progress=True,
+    use_filter=False,
+    min_sigma=0.5,
+    max_sigma=3.0,
+    min_amplitude=0.0,
+    max_amplitude=500,
+    progress_callback=False,
 ):
+    if image is None:
+        return
+
     Nt, Ny, Nx = image.shape
     df_list = []
 
     d = PointSourceDetector2D(sigma=sigma)
+    start_frame = max(start_frame, 0)
+    end_frame = min(end_frame, Nt)
+    Nframes = end_frame - start_frame
+    framecount = 0
 
-    for t in tqdm(range(Nt), disable=not progress):
+    for t in range(start_frame, end_frame + 1):
+        if progress_callback:
+            # update progress bar
+            progress_callback(int(framecount / Nframes * 100))
         img = image[t]
         yxlocs = d.detect_spots(img, significance=significance)
         if mask is not None:
@@ -138,5 +157,16 @@ def find_spots_in_timelapse(
         # compute the combined localization error
         _df["xy_std"] = (_df["x_std"] ** 2 + _df["y_std"] ** 2) ** 0.5
         df_list.append(_df)
+        framecount += 1
 
-    return pd.concat(df_list, axis=0, ignore_index=True)
+    df = pd.concat(df_list, axis=0, ignore_index=True)
+    df = df[(df["retcode"] >= 0) & (df["bg"] > 0)]  # return only good fits
+
+    if use_filter:
+        df = df[
+            (df["sigma"] >= min_sigma)
+            & (df["sigma"] < max_sigma)
+            & (df["A"] > min_amplitude)
+            & (df["A"] < max_amplitude)
+        ]
+    return df
