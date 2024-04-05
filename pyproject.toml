@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=61.0.0", "wheel", "numpy"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "spotfitlm"
+version = "0.1d"
+description = "MLE 2D gaussian fitting with Poisson deviates"
+authors = [{ name = "Daniel Elnatan", email = "delnatan@ucdavis.edu" }]
+readme = "README.md"
+requires-python = ">=3.8"
+dependencies = ["numpy", "pandas", "scipy", "tqdm"]
+
+[project.urls]
+homepage = "https://github.com/delnatan/spotfitlm"
+repository = "https://github.com/delnatan/spotfitlm"
+
+[tool.setuptools]
+packages = ["spotfitlm"]
+
+[tool.setuptools.ext_modules]
+spotfitlm = {
+    "sources": ["c_src/spotfitlm.c"],
+    "include_dirs": ["c_src", '@numpy.get_include()'],
+    "extra_compile_args": ["-O3", "-Wall"],
+    "language": "c"
+}

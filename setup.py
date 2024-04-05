@@ -29,7 +29,7 @@ spotfitlm_extension = Extension(
 
 setup(
     name="spotfitlm",
-    version="0.1c",
+    version="0.1d",
     description="MLE 2D gaussian fitting with Poisson deviates",
     packages=find_packages(),
     ext_modules=[spotfitlm_extension],

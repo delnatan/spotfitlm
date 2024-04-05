@@ -1,21 +1,15 @@
 import ctypes
 import os
-import sys
-
+from importlib.machinery import EXTENSION_SUFFIXES
 import numpy as np
 
 
 def load_library():
     """handle system-specific C-library loading"""
     dir_path = os.path.dirname(os.path.realpath(__file__))
-    suffix = f"{sys.implementation.cache_tag}-{sys.implementation._multiarch}"
+    suffix = EXTENSION_SUFFIXES[0]
 
-    if sys.platform == "darwin" or sys.platform == "linux":
-        extension = "so"
-    else:
-        extension = "dll"
-
-    lib_filename = f"libspotfitlm.{suffix}.{extension}"
+    lib_filename = f"libspotfitlm.{suffix}"
     lib_path = os.path.join(dir_path, lib_filename)
 
     try:
