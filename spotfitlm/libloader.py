@@ -1,6 +1,7 @@
 import ctypes
 import os
 from importlib.machinery import EXTENSION_SUFFIXES
+
 import numpy as np
 
 
@@ -9,7 +10,7 @@ def load_library():
     dir_path = os.path.dirname(os.path.realpath(__file__))
     suffix = EXTENSION_SUFFIXES[0]
 
-    lib_filename = f"libspotfitlm.{suffix}"
+    lib_filename = f"libspotfitlm{suffix}"
     lib_path = os.path.join(dir_path, lib_filename)
 
     try:
