@@ -31,3 +31,4 @@ dist/
 *.so
 *.dylib
 *.dll
+*.o
