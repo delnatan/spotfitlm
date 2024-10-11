@@ -1,12 +1,26 @@
-import numpy
-from setuptools import Extension, find_packages, setup
+import os
+import platform
 
-# December 2023:
-# I've removed LAPACK dependencies so these are no longer needed
-# ----------------------------------------------------------------------
-# for Mac, compile with homebrew-installed lapack
-# LAPACK_LIB = "/opt/homebrew/opt/lapack/lib"
-# LAPACK_INCLUDE_PATH = "/opt/homebrew/opt/lapack/include"
+import numpy
+from setuptools import Extension, setup
+from setuptools.command.build_ext import build_ext
+
+extra_compile_args = []
+extra_link_args = []
+
+
+if platform.system() == "Windows":
+    if "GCC" in os.getenv("CC", ""):
+        extra_compile_args = ["-O3"]  # GCC-style optimization
+    else:  # Default to MSVC (Visual Studio)
+        extra_compile_args = ["/O2"]
+
+    extra_link_args = []  # You can add any Windows-specific linker flags here
+else:
+    extra_compile_args = ["-O3"]  # Linux/macOS-specific optimization
+    extra_link_args = [
+        "-lm"
+    ]  # Link against the math library on Unix-based systems
 
 # the extension will be created as spotfitlm/libspotfitlm*.so
 spotfitlm_extension = Extension(
@@ -22,21 +36,23 @@ spotfitlm_extension = Extension(
         numpy.get_include(),
         "c_src",
     ],
-    extra_compile_args=["-O3", "-Wall"],
-    # extra_link_args=[f"-L{LAPACK_LIB}"],
+    extra_compile_args=extra_compile_args,
+    extra_link_args=extra_link_args,
     language="c",
 )
 
+
+# Custom build class to ensure NumPy headers are included
+class CustomBuildExt(build_ext):
+    def build_extensions(self):
+        numpy_include = numpy.get_include()
+        for ext in self.extensions:
+            if isinstance(ext, Extension):
+                ext.include_dirs.append(numpy_include)
+        super().build_extensions()
+
+
 setup(
-    name="spotfitlm",
-    version="0.1.2",
-    description="MLE 2D gaussian fitting with Poisson deviates",
-    packages=find_packages(),
     ext_modules=[spotfitlm_extension],
-    install_requires=[
-        "numpy",
-        "pandas",
-        "scipy",
-        "tqdm",
-    ],
+    cmdclass={"build_ext": CustomBuildExt},
 )
