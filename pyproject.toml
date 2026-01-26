@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "spotfitlm"
-version = "0.1.2"
+version = "0.1.2c"
 description = "MLE 2D gaussian fitting with Poisson deviates"
 readme = "README.md"
 license = {file = "LICENSE"}
