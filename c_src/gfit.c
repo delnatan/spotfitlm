@@ -104,3 +104,24 @@ void fit_symmetric_gaussian(double *image, int *ylocs, int *xlocs,
   free(covar);
   free_coord_data(&coords);
 }
+
+/*
+ * Minimal Python module initialization.
+ * This is required for Windows MSVC linker when building as a Python extension.
+ * The actual function calls are made via ctypes, not the Python C API.
+ */
+#define PY_SSIZE_T_CLEAN
+#include <Python.h>
+
+static PyMethodDef SpotfitlmMethods[] = {
+    {NULL, NULL, 0, NULL} /* Sentinel */
+};
+
+static struct PyModuleDef spotfitlmmodule = {
+    PyModuleDef_HEAD_INIT,
+    "libspotfitlm", /* module name */
+    NULL,           /* module documentation */
+    -1,             /* module state size (-1 = global state) */
+    SpotfitlmMethods};
+
+PyMODINIT_FUNC PyInit_libspotfitlm(void) { return PyModule_Create(&spotfitlmmodule); }
