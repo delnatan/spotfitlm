@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-void fit_symmetric_gaussian(double *image, int *ylocs, int *xlocs,
+SPOTFITLM_API void fit_symmetric_gaussian(double *image, int *ylocs, int *xlocs,
                             int img_height, int img_width, double sigma_init,
                             int nlocs, int boxsize, int itermax,
                             double *results) {
