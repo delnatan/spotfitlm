@@ -14,10 +14,12 @@ def load_library():
     lib_path = os.path.join(dir_path, lib_filename)
 
     try:
-        print(f"loading {lib_path}")
         lib = ctypes.CDLL(lib_path)
     except OSError as e:
-        raise OSError(f"Failed to load shared library {lib_path}.") from e
+        raise OSError(
+            f"Failed to load shared library: {lib_path}\n"
+            f"Expected extension suffix: {suffix}"
+        ) from e
 
     lib.fit_symmetric_gaussian.argtypes = [
         np.ctypeslib.ndpointer(dtype=np.double, ndim=2, flags="C_CONTIGUOUS"),
