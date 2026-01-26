@@ -1,3 +1,66 @@
 [build-system]
-requires = ["setuptools", "wheel", "numpy"]
+requires = ["setuptools>=61", "wheel", "numpy>=2.0"]
 build-backend = "setuptools.build_meta"
+
+[project]
+name = "spotfitlm"
+version = "0.1.2"
+description = "MLE 2D gaussian fitting with Poisson deviates"
+readme = "README.md"
+license = {file = "LICENSE"}
+authors = [
+    {name = "Daniel Elnatan"}
+]
+requires-python = ">=3.9"
+dependencies = [
+    "numpy>=1.22",
+    "pandas",
+    "scipy",
+    "tqdm",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: C",
+    "Topic :: Scientific/Engineering :: Image Processing",
+]
+keywords = ["gaussian", "fitting", "microscopy", "spot detection", "MLE"]
+
+[project.urls]
+Homepage = "https://github.com/delnatan/spotfitlm"
+Repository = "https://github.com/delnatan/spotfitlm"
+
+[tool.setuptools]
+packages = ["spotfitlm"]
+
+[tool.setuptools.package-data]
+spotfitlm = ["*.so", "*.pyd", "*.dll"]
+
+[tool.cibuildwheel]
+# Skip PyPy and musllinux (not typically needed for scientific packages)
+skip = ["pp*", "*-musllinux_*"]
+
+# Test the built wheels
+test-requires = ["pytest"]
+test-command = "python -c \"from spotfitlm import fit_symmetric_gaussian_mle; print('Import successful')\""
+
+[tool.cibuildwheel.linux]
+# Use manylinux for broad compatibility
+manylinux-x86_64-image = "manylinux2014"
+manylinux-aarch64-image = "manylinux2014"
+
+[tool.cibuildwheel.macos]
+# Build for both Intel and Apple Silicon
+archs = ["x86_64", "arm64"]
+
+[tool.cibuildwheel.windows]
+# Build for 64-bit Windows only
+archs = ["AMD64"]

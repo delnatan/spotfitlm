@@ -1,28 +1,28 @@
-import os
+"""
+Build configuration for spotfitlm C extension.
+
+This file is required by setuptools to build the C extension module.
+All metadata is now in pyproject.toml.
+"""
+
 import platform
 
 import numpy
 from setuptools import Extension, setup
-from setuptools.command.build_ext import build_ext
 
+# Platform-specific compiler flags
 extra_compile_args = []
 extra_link_args = []
 
-
 if platform.system() == "Windows":
-    if "GCC" in os.getenv("CC", ""):
-        extra_compile_args = ["-O3"]  # GCC-style optimization
-    else:  # Default to MSVC (Visual Studio)
-        extra_compile_args = ["/O2"]
-
-    extra_link_args = []  # You can add any Windows-specific linker flags here
+    # MSVC is the default on Windows with cibuildwheel
+    extra_compile_args = ["/O2"]
 else:
-    extra_compile_args = ["-O3"]  # Linux/macOS-specific optimization
-    extra_link_args = [
-        "-lm"
-    ]  # Link against the math library on Unix-based systems
+    # GCC/Clang on Linux/macOS
+    extra_compile_args = ["-O3"]
+    extra_link_args = ["-lm"]  # Link math library on Unix
 
-# the extension will be created as spotfitlm/libspotfitlm*.so
+# Define the C extension
 spotfitlm_extension = Extension(
     "spotfitlm.libspotfitlm",
     sources=[
@@ -41,18 +41,4 @@ spotfitlm_extension = Extension(
     language="c",
 )
 
-
-# Custom build class to ensure NumPy headers are included
-class CustomBuildExt(build_ext):
-    def build_extensions(self):
-        numpy_include = numpy.get_include()
-        for ext in self.extensions:
-            if isinstance(ext, Extension):
-                ext.include_dirs.append(numpy_include)
-        super().build_extensions()
-
-
-setup(
-    ext_modules=[spotfitlm_extension],
-    cmdclass={"build_ext": CustomBuildExt},
-)
+setup(ext_modules=[spotfitlm_extension])
