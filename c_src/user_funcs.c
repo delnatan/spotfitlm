@@ -102,84 +102,6 @@ void symmetric_gaussian_deriv(double *p, int m, int n, void *adata,
   }
 }
 
-void rotated_gaussian(double *p, int m, int n, void *adata, double *f) {
-  /*
-    Rotate Gaussian (2D) from wikipedia
-    https://en.wikipedia.org/wiki/Gaussian_function
-
-    f(x,y) = A * exp(
-    -(a * (x - xc)^2 + 2b * (x - xc) * (y - yc) + c * (y - yc)^2))
-
-    a = cos^2 (theta) / (2 * sigma**2) + sin^2 (theta)/(2* sigma**2);
-    b = -sin(2*theta)
-
-    7 parameters
-   */
-  double xc, yc, sigma_x, sigma_y, theta, A, bg;
-  double xarg, yarg;
-  double wrk;
-
-  coord_data *coord = (coord_data *)adata;
-
-  xc = p[0];
-  yc = p[1];
-  sigma_x = p[2];
-  sigma_y = p[3];
-  theta = p[4];
-  A = p[5];
-  bg = p[6];
-
-  double a, b, c;
-  double cost = cos(theta);
-  double sint = sin(theta);
-  double cost2 = cost * cost;
-  double sint2 = sint * sint;
-
-  a = cost2 / (2 * sigma_x * sigma_x) + sint2 / (2 * sigma_y * sigma_y);
-  b = -sin(2 * theta) / (4 * sigma_x * sigma_x) +
-      sin(2 * theta) / (4 * sigma_y * sigma_y);
-  c = sint2 / (2 * sigma_x * sigma_x) + cost2 / (2 * sigma_y * sigma_y);
-
-  for (int i = 0; i < n; i++) {
-    xarg = coord->x[i] - xc;
-    yarg = coord->y[i] - yc;
-    wrk = a * xarg * xarg + 2 * b * xarg * yarg + c * yarg * yarg;
-    f[i] = A * exp(-wrk) + bg;
-  }
-}
-
-void rotated_gaussian_deriv(double *p, int m, int n, void *adata, double *jac) {
-  double xc, yc, sigma_x, sigma_y, theta, A, bg;
-  double xarg, yarg;
-  double wrk;
-
-  coord_data *coord = (coord_data *)adata;
-
-  xc = p[0];
-  yc = p[1];
-  sigma_x = p[2];
-  sigma_y = p[3];
-  theta = p[4];
-  A = p[5];
-  bg = p[6];
-
-  double a, b, c;
-  double cost = cos(theta);
-  double sint = sin(theta);
-  double cost2 = cost * cost;
-  double sint2 = sint * sint;
-
-  a = cost2 / (2 * sigma_x * sigma_x) + sint2 / (2 * sigma_y * sigma_y);
-  b = -sin(2 * theta) / (4 * sigma_x * sigma_x) +
-      sin(2 * theta) / (4 * sigma_y * sigma_y);
-  c = sint2 / (2 * sigma_x * sigma_x) + cost2 / (2 * sigma_y * sigma_y);
-
-  for (int i = 0; i < n; i++) {
-    xarg = coord->x[i] - xc;
-    yarg = coord->y[i] - yc;
-  }
-}
-
 void symmetric_gaussian_poisson_nll_hess(double *f, double *obs, double *jac,
                                          double *p, int m, int n, void *adata,
                                          double *hess) {
@@ -255,7 +177,7 @@ void symmetric_gaussian_poisson_nll_hess(double *f, double *obs, double *jac,
     // hess[1,1]
     hess[6] += der1 * A * (-s2 + y_diff2) * exp(-phi) / s4;
     hess[7] +=
-        der1 * A * y_diff2 * (-2 * s2 + x_diff2 + y_diff2) * exp(-phi) / s5;
+        der1 * A * y_diff * (-2 * s2 + x_diff2 + y_diff2) * exp(-phi) / s5;
     hess[8] += der1 * y_diff * exp(-phi) / s2;
     hess[9] += 0.0;
     // hess[2,2]

@@ -136,14 +136,15 @@ dglm_der(double (*func)(double *f, double *obs, int n),
       // compute predicted reduction
       predicted_reduction = 0.0;
 
-      // predicted reduction is dp'*g + 0.5 * dp' * H * dp;
+      // predicted reduction is dp'*g - 0.5 * dp' * H * dp
+      // (for descent direction d = -dp, pred = -g'd - 0.5*d'Hd = g'dp - 0.5*dp'Hdp)
       for (i = 0; i < m; i++) {
         predicted_reduction += dp[i] * g[i];
       }
 
       for (i = 0; i < m; i++) {
         for (j = 0; j < m; j++) {
-          predicted_reduction += 0.5 * dp[i] * H[i * m + j] * dp[j];
+          predicted_reduction -= 0.5 * dp[i] * H[i * m + j] * dp[j];
         }
       }
 
@@ -165,13 +166,19 @@ dglm_der(double (*func)(double *f, double *obs, int n),
       /* ap_ratio); */
     }
 
-    // update parameters
-    for (i = 0; i < m; i++) {
-      p[i] -= dp[i];
+    // Only update parameters if we found an acceptable step
+    if (!singular && ap_ratio >= 0.25) {
+      for (i = 0; i < m; i++) {
+        p[i] -= dp[i];
+      }
     }
   }
   // calculate covariance matrix
   if (covar) {
+    // Recompute model and jacobian at final parameters
+    (*model)(p, m, n, adata, f);
+    (*fjac)(p, m, n, adata, jac);
+
     // calculate analytical hessian
     if (fhess) {
       (*fhess)(f, obs, jac, p, m, n, adata, H);
@@ -184,7 +191,7 @@ dglm_der(double (*func)(double *f, double *obs, int n),
     // H is now L
     if (singular >= 0) {
       matrix_inverse_from_cholesky(H, m, covar);
-      ret = 0; // successful iteration
+      // ret already reflects convergence status - don't overwrite
     } else {
       ret = -2; // Hessian is not positive definite
     }

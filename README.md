@@ -1,30 +1,56 @@
 # spotfitlm
 
-A small Python library for doing robust spot detection in 2D by (MLE) Gaussian fitting. The fitting is done through a small C library implementing a damped Gauss-Newton optimization algorithm (like Levenberg-Marquardt) algorithm. Error estimates (covariance) matrix of the fit parameters are computed from the (inverse of) full Hessian matrix. Currently, only a symmetric Gaussian fit is implemented.
+A Python library for robust spot detection in 2D images using MLE Gaussian fitting. The core fitting algorithm is implemented in C using a Levenberg-Marquardt optimizer with Poisson noise model. Parameter uncertainties are computed from the full Hessian matrix.
 
-The objective function being minimized is the same as Laurence & Chromy's MLE method [https://www.nature.com/articles/nmeth0510-338].
+See [DETAILS.md](DETAILS.md) for algorithm documentation.
 
-For spot detection, this package uses the algorithm from Danuser Lab's U-track MATLAB software. Specifically, the code from:
-[https://github.com/DanuserLab/u-track3D/blob/9279b3784de64d29bb06c3693e99f2e5c064288e/software/pointSourceDetection.m#L111]
+## Features
 
-for doing the hypothesis testing on *significant* Gaussian peaks above background noise.
+- Maximum likelihood estimation with Poisson noise model
+- Sub-pixel localization of point sources
+- Covariance-based uncertainty estimates
+- Spot detection using statistical hypothesis testing
 
-# Installation
+## Installation
 
-This package is not yet released at PyPI so it can't be installed by a simple `pip install`, so you'll need to use `git` to install it to your Python environment:
-
-For MacOS or Linux system make sure you have a c compiler accessible in your path. Windows installation is more complicated because I haven't figured out how to use the right compilers.
-
-1) Clone this repository
 ```bash
-git clone https://github.com/delnatan/spotfitlm.git
+pip install spotfitlm
 ```
 
-2) and go into the directory `spotfitlm` and run:
-```bash
-pip install -e .
+Pre-built wheels are available for:
+- **Python**: 3.9 - 3.13
+- **Platforms**: Windows (x64), macOS (Intel & Apple Silicon), Linux (x64, arm64)
+
+## Usage
+
+```python
+import numpy as np
+from spotfitlm import find_spots_in_timelapse
+
+# Load your image (2D + time numpy array)
+image = ...
+# and mask (2D binary numpy array) (optional)
+mask = ... 
+
+# Detect and fit spots
+results = find_spots_in_timelapse(
+    image,
+    mask,
+    sigma=1.5,      # expected PSF width
+    boxsize=9,      # fitting ROI size
+    alpha=0.05,     # significance level for detection
+    use_filter=True,
+    min_sigma=0.8,
+    max_sigma=2.4,
+    min_amplitude=5.0,
+    max_amplitude=800,
+)
+
+# Results is a DataFrame with columns:
+# amplitude, background, x, y, x_err, y_err, sigma, ...
 ```
 
-# Windows installation
+## References
 
-Unfortunately, I haven't had the time to work out installation procedure for Windows. You just need to compile the C library and put it in a place where the .dll file can be loaded via Python. In the past, I setup the compiler within a conda environment, and installed `m2w64-toolchain` via conda-forge channels. Then you'll have access to `gcc`. Since there are no dependencies, the library should compile fine. I intend to make a simple Makefile for doing this process to streamline the setup in Windows machine.
+- Laurence, T.A. & Chromy, B.A. (2010). Efficient maximum likelihood estimator fitting of histograms. *Nature Methods*, 7(5), 338-339.
+- Aguet, F. et al. (2013). Advances in analysis of low signal-to-noise images link dynamin and AP2 to the functions of an endocytic checkpoint. *Developmental Cell*, 26(3), 279-291.
