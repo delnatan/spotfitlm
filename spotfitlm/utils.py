@@ -154,8 +154,11 @@ def find_spots_in_timelapse(
             yxlocs = (yxlocs[0][valid_spots], yxlocs[1][valid_spots])
         _df = fit_symmetric_gaussian_mle(img, yxlocs, boxsize, sigma, itermax)
         _df["frame"] = t
-        # compute the combined localization error
-        _df["xy_std"] = (_df["x_std"] ** 2 + _df["y_std"] ** 2) ** 0.5
+        # equivalent per-axis localization error (Rayleigh sigma) for a
+        # symmetric Gaussian fit, where x_std ~= y_std by construction:
+        # averaging (not summing) the two variances keeps this a per-axis
+        # sigma rather than the sqrt(2)-inflated 2D error-vector magnitude
+        _df["xy_std"] = ((_df["x_std"] ** 2 + _df["y_std"] ** 2) / 2) ** 0.5
         df_list.append(_df)
         framecount += 1
 
